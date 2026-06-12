@@ -1,0 +1,46 @@
+---
+title: "Trains"
+author: "Var Kurapati"
+format: html
+execute:
+  echo: false
+---
+
+
+```{r}
+#| message: false
+library(tidyverse)
+library(primer.data)
+library(tidymodels)
+```
+
+```{r}
+trains |>
+  ggplot(aes(x = treatment, y = att_end, color = treatment)) +
+  geom_jitter(width = 0.2, alpha = 0.6) +
+  stat_summary(fun = mean, geom = "point", size = 4, shape = 18, color = "black") +
+  labs(
+    title = "Post-Experiment Immigration Attitudes by Treatment Group",
+    subtitle = "Black diamonds show group means; treated commuters score slightly higher",
+    x = "Treatment",
+    y = "Attitude Score (higher = more anti-immigration)",
+    color = "Treatment",
+    caption = "Source: Enos (2014) via primer.data::trains"
+  )
+```
+
+```{r}
+glimpse(trains)
+```
+
+Attitudes toward immigration respond to brief encounters with speakers 
+of another language, at least in the short run. Using data from Ryan 
+Enos's January 2012 randomized experiment on Boston-area Metra platforms 
+(115 commuters, randomly assigned to exposure or non-exposure to 
+Spanish-speaking confederates for two weeks), we estimate the average 
+causal effect of that exposure on anti-immigration attitudes. However, 
+since the experiment was conducted exclusively on Boston commuter 
+platforms in 2012, the estimated effect may not generalize to other 
+cities or the current political climate, where attitudes toward 
+immigration have shifted considerably.
+
