@@ -6,32 +6,33 @@ execute:
   echo: false
 ---
 
-
 ```{r}
 #| message: false
 library(tidyverse)
 library(primer.data)
 library(tidymodels)
 library(gt)
+library(marginaleffects)
 ```
 
 ```{r}
-trains |>
-  ggplot(aes(x = treatment, y = att_end, color = treatment)) +
-  geom_jitter(width = 0.2, alpha = 0.6) +
-  stat_summary(fun = mean, geom = "point", size = 4, shape = 18, color = "black") +
+#| cache: true
+fit_att <- linear_reg(engine = "lm") |> fit(att_end ~ treatment, data = trains)
+```
+
+```{r}
+plot_predictions(fit_att, condition = "treatment", draw = FALSE) |>
+  ggplot(aes(x = treatment, y = estimate, color = treatment)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
   labs(
-    title = "Post-Experiment Immigration Attitudes by Treatment Group",
-    subtitle = "Black diamonds show group means; treated commuters score slightly higher",
-    x = "Treatment",
-    y = "Attitude Score (higher = more anti-immigration)",
+    title = "Causal Effect of Spanish-Speaker Exposure on Immigration Attitudes",
+    subtitle = "Treated commuters show higher anti-immigration attitudes than controls",
+    x = "Treatment Group",
+    y = "Predicted Attitude Score (3-15 scale)",
     color = "Treatment",
     caption = "Source: Enos (2014) via primer.data::trains"
   )
-```
-
-```{r}
-glimpse(trains)
 ```
 
 Attitudes toward immigration respond to brief encounters with speakers 
@@ -45,29 +46,25 @@ platforms in 2012, the estimated effect may not generalize to other
 cities or the current political climate, where attitudes toward 
 immigration have shifted considerably. We model att_end, immigration 
 attitude scores measured after the experiment, as a linear function of 
-treatment, the randomized exposure to Spanish-speaking confederates.
+treatment, the randomized exposure to Spanish-speaking confederates. We 
+estimate that exposure to Spanish-speaking confederates increases 
+anti-immigration attitude scores by about 1.55 points on the 3–15 scale 
+(95% CI: 0.51–2.58), suggesting that even brief everyday contact can 
+shift attitudes toward immigration in the short run.
 
-```{r}
-linear_reg(engine = "lm") |> fit(att_end ~ treatment + age, data = trains)
-```
+Our estimates are likely too narrow in scope because the experiment was 
+conducted on a small, self-selected sample of 115 Boston commuters in 
+January 2012, a single city and time period that may not represent how 
+other populations would respond to similar exposure today. While 
+randomization should ensure unconfoundedness within this sample, the 
+validity of treating the experiment's narrow definition of 'exposure' 
+as representative of everyday encounters with Spanish-speakers elsewhere 
+is uncertain, and the political climate around immigration has shifted 
+substantially since 2012 in ways that could change the size or even 
+direction of this effect. The confidence interval also only captures 
+sampling uncertainty within this experiment, not the broader uncertainty 
+about whether this effect would replicate in a different setting.
 
-```{r}
-#| cache: true
-fit_att <- linear_reg(engine = "lm") |> fit(att_end ~ treatment, data = trains)
-```
-
-```{r}
-tidy(fit_att, conf.int = TRUE)
-```
-
-```{r}
-tidy(fit_att, conf.int = TRUE) |>
-  select(term, estimate, conf.low, conf.high) |>
-  mutate(across(c(estimate, conf.low, conf.high), \(x) signif(x, 3))) |>
-  gt() |>
-  tab_header(title = "Estimates and 95% Confidence Intervals for Parameters",
-             subtitle = "Source: Enos (2014) via primer.data::trains")
-```
 
 
 
