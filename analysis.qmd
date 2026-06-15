@@ -12,6 +12,7 @@ execute:
 library(tidyverse)
 library(primer.data)
 library(tidymodels)
+library(gt)
 ```
 
 ```{r}
@@ -42,5 +43,31 @@ causal effect of that exposure on anti-immigration attitudes. However,
 since the experiment was conducted exclusively on Boston commuter 
 platforms in 2012, the estimated effect may not generalize to other 
 cities or the current political climate, where attitudes toward 
-immigration have shifted considerably.
+immigration have shifted considerably. We model att_end, immigration 
+attitude scores measured after the experiment, as a linear function of 
+treatment, the randomized exposure to Spanish-speaking confederates.
+
+```{r}
+linear_reg(engine = "lm") |> fit(att_end ~ treatment + age, data = trains)
+```
+
+```{r}
+#| cache: true
+fit_att <- linear_reg(engine = "lm") |> fit(att_end ~ treatment, data = trains)
+```
+
+```{r}
+tidy(fit_att, conf.int = TRUE)
+```
+
+```{r}
+tidy(fit_att, conf.int = TRUE) |>
+  select(term, estimate, conf.low, conf.high) |>
+  mutate(across(c(estimate, conf.low, conf.high), \(x) signif(x, 3))) |>
+  gt() |>
+  tab_header(title = "Estimates and 95% Confidence Intervals for Parameters",
+             subtitle = "Source: Enos (2014) via primer.data::trains")
+```
+
+
 
